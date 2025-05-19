@@ -1,38 +1,42 @@
 pipeline {
     agent any
     
-    tools{
-        maven "Maven-3.9.9"
-    }    
+    tools {
+        maven "maven-3.9.9"
+    }
 
+    
     stages {
-        stage('Git Clone') {
+        stage('git clone') {
             steps {
-               git branch: 'main', url: 'https://github.com/ashokitschool/01_products_api.git'
+                git branch: 'main', url: 'https://github.com/ashokitschool/01_products_api.git'
             }
         }
-        stage('Maven Build'){
+
+        stage('maven build'){
             steps{
-             sh 'mvn clean package'
+                sh 'mvn clean package'
             }
         }
-        stage('Docker Image'){
+        
+        stage('Build Docker Image'){
             steps{
-             sh 'docker build -t ashokit/products_api .'
+                sh 'docker build -t ashokit/products .'
             }
         }
-        stage('Docker Image push'){
+        stage('Push Docker Image'){
             steps{
-            withCredentials([string(credentialsId: 'docker_pwd', variable: 'docker_pwd')]) {
-                   sh 'docker login -u ashokit -p ${docker_pwd}'
-                   sh 'docker push ashokit/products_api'
-            }
+                withCredentials([string(credentialsId: 'dockerloginpwd', variable: 'docker_login_pwd')]) {
+                    sh 'docker login -u ayushkole45 -p ${docker_login_pwd}'
+                    sh 'docker push ashokit/products'
+                }
             }
         }
-        stage('kubernetes deployment'){
+        stage('K8S Deployment'){
             steps{
-             sh 'kubectl apply -f Deployment.yml'
+                sh 'kubectl apply -f Deployment.yml'
             }
-        }        
+        }
     }
 }
+
